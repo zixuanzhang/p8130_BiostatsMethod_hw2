@@ -1,0 +1,97 @@
+---
+title: "HW2_code"
+output: github_document
+---
+
+# Problem 6
+
+A study is to examine the associations of depression and cognitive performance with migraine symptoms: 
+
+## Some backgrounds:
+
+CESD: questionairre screening for depression; meausre symptoms of depression; sum of scores to all questions; longer duration of symptoms will have greater score.
+
+nddie: The Neurological Disorders Depression Inventory for Epilepsy (NDDI-E) is a 6-item questionnaire validated to screen for depression in people with epilepsy
+
+
+## Import data
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+
+```{r import data}
+library(readxl)
+
+excel_sheets("Migraine.xlsx")
+Mig <- read_excel("Migraine.xlsx")
+
+Mig <- janitor::clean_names(Mig) # rename variable names
+```
+
+Have a look at the data:
+
+```{r}
+head(Mig)
+str(Mig)
+```
+
+variables in the data:
+
+| Variable names |   description  |
+|:---------------:|:-----------------|
+|Migraine        |Migraine status: 0(no), 1(yes) |
+|CESD            |Depression Scale|
+|NDDIE           |Self rating tool to screen for depression, inventory|
+|ABNAS memory    |Assessement for memory |
+|ABNAS language  |Assessment for language |
+
+## exploratory analysis
+
+Seperate subjects with and without migraine.
+
+```{r seperate variables}
+with_Mig <- filter(Mig, migraine == 1)
+no_Mig <- filter(Mig, migraine == 0)
+```
+
+Explore subjects with migraine
+
+```{r}
+summary(with_Mig$cesd)
+summary(no_Mig$cesd)
+```
+
+
+plots:
+
+```{r cesd}
+par(mfrow = c(1, 2))
+hist(no_Mig$cesd, freq = F, ylim = c(0, 0.1))
+hist(with_Mig$cesd, freq = F, ylim = c(0, 0.1))
+```
+
+```{r nddie}
+par(mfrow = c(1, 2))
+hist(no_Mig$nddie, freq = F, ylim = c(0, 0.3))
+hist(with_Mig$nddie, freq = F, ylim = c(0, 0.3))
+```
+
+
+```{r abnas}
+par(mfrow = c(2, 2))
+hist(no_Mig$abnas_memory, freq = F, ylim = c(0, 0.6))
+hist(with_Mig$abnas_memory, freq = F, ylim = c(0, 0.6))
+hist(no_Mig$abnas_language, freq = F, ylim = c(0, 0.7))
+hist(with_Mig$abnas_language, freq = F, ylim = c(0, 0.7))
+```
+
+
+summary table for patients with migraine: 
+
+|         |with_mig_cesd  |no_mig_cesd  |with_mig_nddie |no_mig_nddie |with_mig_memory|no_mig_memory|with_mig_language|no_mig_languge|
+|---------|---------------|-------------|---------------|-------------|---------------|-------------|---------------|---------------|
+|mean     | 
+|sd| 
+|median   |
