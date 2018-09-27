@@ -1,11 +1,13 @@
 ---
-title: "HW2_code"
+title: "Analysis for HEP Data (Problem 6)"
+author: Eleanor Zhang
+date: 2018-09-27
 output: github_document
 ---
 
-# Problem 6
+# Overview
 
-A study is to examine the associations of depression and cognitive performance with migraine symptoms: 
+This document aims to analyze a research study which examining association of depression and cognitive performance with migraine symtoms. HEP Data were collected from patients with new onset of focal epilepsy with their informations including migraine status, score of NDDIE (Neurological Disorders Depression Inventory for Epilepsy), score of CESD (a questionairre screening for depression), cognitive evaluation for both memory and language.
 
 ## Some backgrounds:
 
@@ -13,58 +15,69 @@ CESD: questionairre screening for depression; meausre symptoms of depression; su
 
 nddie: The Neurological Disorders Depression Inventory for Epilepsy (NDDI-E) is a 6-item questionnaire validated to screen for depression in people with epilepsy
 
-
-## Import data
-
 ```{r setup, include=FALSE}
 library(tidyverse)
-```
-
-
-```{r import data}
 library(readxl)
-
-excel_sheets("Migraine.xlsx")
-Mig <- read_excel("Migraine.xlsx")
-
-Mig <- janitor::clean_names(Mig) # rename variable names
 ```
+
+# Import Data and Data Cleaning
+
+```{r data import and cleaning}
+Mig <- read_excel("Migraine.xlsx")
+Mig <- janitor::clean_names(Mig) # rename variable names
+Mig$migraine_status <- ifelse(Mig$migraine == 1, "have_migraine", "no_migraine")
+```
+
+# Exploratory Analysis
 
 Have a look at the data:
 
 ```{r}
 head(Mig)
 str(Mig)
+dim(Mig) # 419 observations, 5 variables
 ```
 
-variables in the data:
 
-| Variable names |   description  |
-|:---------------:|:-----------------|
-|Migraine        |Migraine status: 0(no), 1(yes) |
-|CESD            |Depression Scale|
-|NDDIE           |Self rating tool to screen for depression, inventory|
-|ABNAS memory    |Assessement for memory |
-|ABNAS language  |Assessment for language |
-
-## exploratory analysis
-
-Seperate subjects with and without migraine.
+#### Seperate subjects with and without migraine.
 
 ```{r seperate variables}
 with_Mig <- filter(Mig, migraine == 1)
 no_Mig <- filter(Mig, migraine == 0)
 ```
 
-Explore subjects with migraine
+#### Explore subjects with migraine
+
+## 1. Descriptive statistics
+
+First we can take an overall look at the distribution of each variables:
 
 ```{r}
-summary(with_Mig$cesd)
-summary(no_Mig$cesd)
+str(Mig)
+skimr::skim(Mig)
+```
+
+The `skim` function enables a rough preview of the distribution of each variable in the dataset.
+
+
+
+
+Look at proportions of each variables in terms of with migraine or without migrain
+
+```{r summary for each variable}
+tbl <- table(Mig$cesd, Mig$migraine)
+prop.table(tbl,1)
+prop.table(tbl,2)
+```
+
+```{r}
+ggplot(Mig, aes(x = migraine_status, y = cesd, fill = migraine_status)) + 
+  geom_boxplot()
 ```
 
 
-plots:
+
+#### histograms:
 
 ```{r cesd}
 par(mfrow = c(1, 2))
@@ -88,10 +101,14 @@ hist(with_Mig$abnas_language, freq = F, ylim = c(0, 0.7))
 ```
 
 
-summary table for patients with migraine: 
+#### boxplots
 
-|         |with_mig_cesd  |no_mig_cesd  |with_mig_nddie |no_mig_nddie |with_mig_memory|no_mig_memory|with_mig_language|no_mig_languge|
-|---------|---------------|-------------|---------------|-------------|---------------|-------------|---------------|---------------|
-|mean     | 
-|sd| 
-|median   |
+```{r}
+Mig$migraine_status <- ifelse(Mig$migraine == 1, "have_migraine", "no_migraine")
+ggplot(Mig, aes(x = migraine, y = cesd, fill = migraine_status) ) + geom_boxplot()
+
+ggplot(Mig, aes(x = migraine, y = nddie, fill = migraine_status)) + geom_boxplot()
+ggplot(Mig, aes(x = migraine, y = abnas_memory, fill = migraine_status)) + geom_boxplot()
+ggplot(Mig, aes(x = migraine, y = abnas_language, fill = migraine_status)) + geom_boxplot()
+```
+

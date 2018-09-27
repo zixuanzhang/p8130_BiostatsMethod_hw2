@@ -57,6 +57,12 @@ str(Mig)
     ##  $ abnas_memory  : num  1 0 0 1 1 1 0 2 0 4 ...
     ##  $ abnas_language: num  0 0 0 0 0 0 0 0 0 0 ...
 
+``` r
+dim(Mig) # 419 observations, 5 variables
+```
+
+    ## [1] 419   5
+
 variables in the data:
 
 | Variable names | description                                          |
@@ -70,14 +76,21 @@ variables in the data:
 exploratory analysis
 --------------------
 
-Seperate subjects with and without migraine.
+#### Seperate subjects with and without migraine.
 
 ``` r
 with_Mig <- filter(Mig, migraine == 1)
 no_Mig <- filter(Mig, migraine == 0)
 ```
 
-Explore subjects with migraine
+#### Explore subjects with migraine
+
+``` r
+summary(no_Mig$cesd)
+```
+
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+    ##    0.00    3.00    8.00   10.68   14.00   48.00      63
 
 ``` r
 summary(with_Mig$cesd)
@@ -87,13 +100,116 @@ summary(with_Mig$cesd)
     ##    0.00    6.00   11.00   14.41   20.00   46.00       8
 
 ``` r
-summary(no_Mig$cesd)
+summary(no_Mig$nddie)
 ```
 
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
-    ##    0.00    3.00    8.00   10.68   14.00   48.00      63
+    ##    6.00    6.00    9.00   10.29   13.00   24.00      64
 
-plots:
+``` r
+summary(with_Mig$nddie)
+```
+
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+    ##    6.00    8.00   11.00   11.42   14.00   23.00       9
+
+``` r
+summary(no_Mig$abnas_memory)
+```
+
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##   0.000   0.000   2.000   2.555   4.000  12.000
+
+``` r
+summary(with_Mig$abnas_memory)
+```
+
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##   0.000   1.000   2.000   3.305   5.000  12.000
+
+``` r
+summary(no_Mig$abnas_language)
+```
+
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##   0.000   0.000   1.000   1.602   2.000   9.000
+
+``` r
+summary(with_Mig$abnas_language)
+```
+
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##   0.000   0.000   1.000   1.976   3.000   8.000
+
+``` r
+sd(no_Mig$cesd, na.rm = T)
+```
+
+    ## [1] 10.29807
+
+``` r
+sd(with_Mig$cesd, na.rm = T)
+```
+
+    ## [1] 11.47591
+
+``` r
+sd(no_Mig$nddie, na.rm = T)
+```
+
+    ## [1] 4.48925
+
+``` r
+sd(with_Mig$nddie, na.rm = T)
+```
+
+    ## [1] 4.361822
+
+``` r
+sd(no_Mig$abnas_memory, na.rm = T)
+```
+
+    ## [1] 3.042963
+
+``` r
+sd(with_Mig$abnas_memory, na.rm = T)
+```
+
+    ## [1] 3.369027
+
+``` r
+sd(no_Mig$abnas_language, na.rm = T)
+```
+
+    ## [1] 2.212463
+
+``` r
+sd(with_Mig$abnas_language, na.rm = T)
+```
+
+    ## [1] 2.084485
+
+#### summary table for patients without migraine:
+
+| with migraine | cesd | nddie | memory | language |
+|---------------|------|-------|--------|----------|
+| mean          |      |
+| sd            |      |
+| median        |      |
+| IQR           |      |
+| NA            |      |
+
+summary table for patients with migraine:
+
+| with migraine | cesd | nddie | memory | language |
+|---------------|------|-------|--------|----------|
+| mean          |      |
+| sd            |      |
+| median        |      |
+| IQR           |      |
+| NA            |      |
+
+#### histograms:
 
 ``` r
 par(mfrow = c(1, 2))
@@ -121,45 +237,34 @@ hist(with_Mig$abnas_language, freq = F, ylim = c(0, 0.7))
 
 ![](HW2_code_files/figure-markdown_github/abnas-1.png)
 
-summary table for patients with migraine:
+#### boxplots
 
-<table>
-<colgroup>
-<col width="7%" />
-<col width="12%" />
-<col width="10%" />
-<col width="12%" />
-<col width="10%" />
-<col width="12%" />
-<col width="10%" />
-<col width="12%" />
-<col width="12%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th></th>
-<th>with_mig_cesd</th>
-<th>no_mig_cesd</th>
-<th>with_mig_nddie</th>
-<th>no_mig_nddie</th>
-<th>with_mig_memory</th>
-<th>no_mig_memory</th>
-<th>with_mig_language</th>
-<th>no_mig_languge</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>mean</td>
-<td></td>
-</tr>
-<tr class="even">
-<td>sd</td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>median</td>
-<td></td>
-</tr>
-</tbody>
-</table>
+``` r
+par(mfrow = c(2,2))
+Mig$migraine_status <- ifelse(Mig$migraine == 1, "have_migraine", "no_migraine")
+ggplot(Mig, aes(x = migraine, y = cesd, fill = migraine_status) ) + geom_boxplot()
+```
+
+    ## Warning: Removed 71 rows containing non-finite values (stat_boxplot).
+
+![](HW2_code_files/figure-markdown_github/unnamed-chunk-2-1.png)
+
+``` r
+ggplot(Mig, aes(x = migraine, y = nddie, fill = migraine_status)) + geom_boxplot()
+```
+
+    ## Warning: Removed 73 rows containing non-finite values (stat_boxplot).
+
+![](HW2_code_files/figure-markdown_github/unnamed-chunk-2-2.png)
+
+``` r
+ggplot(Mig, aes(x = migraine, y = abnas_memory, fill = migraine_status)) + geom_boxplot()
+```
+
+![](HW2_code_files/figure-markdown_github/unnamed-chunk-2-3.png)
+
+``` r
+ggplot(Mig, aes(x = migraine, y = abnas_language, fill = migraine_status)) + geom_boxplot()
+```
+
+![](HW2_code_files/figure-markdown_github/unnamed-chunk-2-4.png)
