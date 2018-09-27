@@ -1,91 +1,115 @@
-HW2\_code
+Analysis for HEP Data (Problem 6)
 ================
+Eleanor Zhang
+2018-09-27
 
-Problem 6
-=========
+Overview
+========
 
-A study is to examine the associations of depression and cognitive performance with migraine symptoms:
+This document aims to analyze a research study which examining association of depression and cognitive performance with migraine symtoms. HEP Data were collected from patients with new onset of focal epilepsy with their informations including migraine status, score of NDDIE (Neurological Disorders Depression Inventory for Epilepsy), score of CESD (a questionairre screening for depression), cognitive evaluation for both memory and language.
 
-Some backgrounds:
------------------
-
-CESD: questionairre screening for depression; meausre symptoms of depression; sum of scores to all questions; longer duration of symptoms will have greater score.
-
-nddie: The Neurological Disorders Depression Inventory for Epilepsy (NDDI-E) is a 6-item questionnaire validated to screen for depression in people with epilepsy
-
-Import data
------------
-
-``` r
-library(readxl)
-
-excel_sheets("Migraine.xlsx")
-```
-
-    ## [1] "Sheet1"
+Import Data and Data Cleaning
+=============================
 
 ``` r
 Mig <- read_excel("Migraine.xlsx")
-
 Mig <- janitor::clean_names(Mig) # rename variable names
+Mig$migraine_status <- ifelse(Mig$migraine == 1, "have_migraine", "no_migraine")
 ```
 
-Have a look at the data:
+Exploratory Analysis
+====================
+
+### Part I: descriptive statistics without cutoffs
+
+Firstly, we can have an general look at the data:
 
 ``` r
 head(Mig)
 ```
 
-    ## # A tibble: 6 x 5
-    ##   migraine  cesd nddie abnas_memory abnas_language
-    ##      <dbl> <dbl> <dbl>        <dbl>          <dbl>
-    ## 1        0    42    NA            1              0
-    ## 2        0    NA     6            0              0
-    ## 3        0    10    11            0              0
-    ## 4        0    NA    NA            1              0
-    ## 5        0    23    16            1              0
-    ## 6        0     6     8            1              0
+    ## # A tibble: 6 x 6
+    ##   migraine  cesd nddie abnas_memory abnas_language migraine_status
+    ##      <dbl> <dbl> <dbl>        <dbl>          <dbl> <chr>          
+    ## 1        0    42    NA            1              0 no_migraine    
+    ## 2        0    NA     6            0              0 no_migraine    
+    ## 3        0    10    11            0              0 no_migraine    
+    ## 4        0    NA    NA            1              0 no_migraine    
+    ## 5        0    23    16            1              0 no_migraine    
+    ## 6        0     6     8            1              0 no_migraine
 
 ``` r
 str(Mig)
 ```
 
-    ## Classes 'tbl_df', 'tbl' and 'data.frame':    419 obs. of  5 variables:
-    ##  $ migraine      : num  0 0 0 0 0 0 0 0 0 0 ...
-    ##  $ cesd          : num  42 NA 10 NA 23 6 NA NA NA NA ...
-    ##  $ nddie         : num  NA 6 11 NA 16 8 NA NA NA NA ...
-    ##  $ abnas_memory  : num  1 0 0 1 1 1 0 2 0 4 ...
-    ##  $ abnas_language: num  0 0 0 0 0 0 0 0 0 0 ...
+    ## Classes 'tbl_df', 'tbl' and 'data.frame':    419 obs. of  6 variables:
+    ##  $ migraine       : num  0 0 0 0 0 0 0 0 0 0 ...
+    ##  $ cesd           : num  42 NA 10 NA 23 6 NA NA NA NA ...
+    ##  $ nddie          : num  NA 6 11 NA 16 8 NA NA NA NA ...
+    ##  $ abnas_memory   : num  1 0 0 1 1 1 0 2 0 4 ...
+    ##  $ abnas_language : num  0 0 0 0 0 0 0 0 0 0 ...
+    ##  $ migraine_status: chr  "no_migraine" "no_migraine" "no_migraine" "no_migraine" ...
 
 ``` r
-dim(Mig) # 419 observations, 5 variables
+skimr::skim(Mig)
 ```
 
-    ## [1] 419   5
+    ## Skim summary statistics
+    ##  n obs: 419 
+    ##  n variables: 6 
+    ## 
+    ## ── Variable type:character ─────────────────────────────────────────────────────────────────────────────────────
+    ##         variable missing complete   n min max empty n_unique
+    ##  migraine_status       0      419 419  11  13     0        2
+    ## 
+    ## ── Variable type:numeric ───────────────────────────────────────────────────────────────────────────────────────
+    ##        variable missing complete   n  mean    sd p0 p25 p50  p75 p100
+    ##  abnas_language       0      419 419  1.68  2.19  0   0   1  2.5    9
+    ##    abnas_memory       0      419 419  2.7   3.12  0   0   2  4     12
+    ##            cesd      71      348 419 11.47 10.65  0   3   9 16     48
+    ##        migraine       0      419 419  0.2   0.4   0   0   0  0      1
+    ##           nddie      73      346 419 10.53  4.48  6   7   9 13     24
+    ##      hist
+    ##  ▇▂▁▁▁▁▁▁
+    ##  ▇▃▁▂▁▁▁▁
+    ##  ▇▆▂▂▁▁▁▁
+    ##  ▇▁▁▁▁▁▁▂
+    ##  ▇▃▂▂▁▁▁▁
 
-variables in the data:
+Our data is consisted of 419 observations with 5 variables. Some variables contains missing values which need to be taken care of.
 
-| Variable names | description                                          |
-|:--------------:|:-----------------------------------------------------|
-|    Migraine    | Migraine status: 0(no), 1(yes)                       |
-|      CESD      | Depression Scale                                     |
-|      NDDIE     | Self rating tool to screen for depression, inventory |
-|  ABNAS memory  | Assessement for memory                               |
-| ABNAS language | Assessment for language                              |
-
-exploratory analysis
---------------------
-
-#### Seperate subjects with and without migraine.
+Since we are interested in the relationship of cognitive performance, with or without migraine, and depression conditions, we can look at and compare the subset of each variable corresponding to migraine status. So here we subset the whole dataset into two subsets:
 
 ``` r
 with_Mig <- filter(Mig, migraine == 1)
-no_Mig <- filter(Mig, migraine == 0)
+str(with_Mig)
 ```
 
-#### Explore subjects with migraine
+    ## Classes 'tbl_df', 'tbl' and 'data.frame':    82 obs. of  6 variables:
+    ##  $ migraine       : num  1 1 1 1 1 1 1 1 1 1 ...
+    ##  $ cesd           : num  2 27 7 6 2 16 2 1 NA 2 ...
+    ##  $ nddie          : num  8 14 6 13 6 11 6 8 NA 7 ...
+    ##  $ abnas_memory   : num  0 2 0 2 0 0 0 1 0 1 ...
+    ##  $ abnas_language : num  0 0 0 0 0 0 0 0 0 0 ...
+    ##  $ migraine_status: chr  "have_migraine" "have_migraine" "have_migraine" "have_migraine" ...
 
 ``` r
+no_Mig <- filter(Mig, migraine == 0)
+str(no_Mig)
+```
+
+    ## Classes 'tbl_df', 'tbl' and 'data.frame':    337 obs. of  6 variables:
+    ##  $ migraine       : num  0 0 0 0 0 0 0 0 0 0 ...
+    ##  $ cesd           : num  42 NA 10 NA 23 6 NA NA NA NA ...
+    ##  $ nddie          : num  NA 6 11 NA 16 8 NA NA NA NA ...
+    ##  $ abnas_memory   : num  1 0 0 1 1 1 0 2 0 4 ...
+    ##  $ abnas_language : num  0 0 0 0 0 0 0 0 0 0 ...
+    ##  $ migraine_status: chr  "no_migraine" "no_migraine" "no_migraine" "no_migraine" ...
+
+Since the `skim` function allows us to the general trend of each variable, we would expect the variables are significantly skewed. To better describe the data, we will use *median* and *interquartile range* to describe each variable in these two sets **with\_Mig** and **no\_Mig**.
+
+``` r
+#cesd
 summary(no_Mig$cesd)
 ```
 
@@ -100,6 +124,7 @@ summary(with_Mig$cesd)
     ##    0.00    6.00   11.00   14.41   20.00   46.00       8
 
 ``` r
+#nddie
 summary(no_Mig$nddie)
 ```
 
@@ -114,6 +139,7 @@ summary(with_Mig$nddie)
     ##    6.00    8.00   11.00   11.42   14.00   23.00       9
 
 ``` r
+#abnas_memory
 summary(no_Mig$abnas_memory)
 ```
 
@@ -128,6 +154,7 @@ summary(with_Mig$abnas_memory)
     ##   0.000   1.000   2.000   3.305   5.000  12.000
 
 ``` r
+#abnas_language
 summary(no_Mig$abnas_language)
 ```
 
@@ -141,73 +168,37 @@ summary(with_Mig$abnas_language)
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
     ##   0.000   0.000   1.000   1.976   3.000   8.000
 
-``` r
-sd(no_Mig$cesd, na.rm = T)
-```
+To describe the dataset in terms of sample size and missing values:
 
-    ## [1] 10.29807
+|                                    |   cesd  |  nddie  | abnas\_memory | abnas\_language |
+|------------------------------------|:-------:|:-------:|:-------------:|:---------------:|
+| no migraine (sample size\[NAs\])   | 337(63) | 337(64) |     337(0)    |      337(0)     |
+| with migraine (sample size\[NAs\]) |  82(8)  |  82(9)  |     82(0)     |      82(0)      |
 
-``` r
-sd(with_Mig$cesd, na.rm = T)
-```
+Put all information about median and IQR together as a table:
 
-    ## [1] 11.47591
+|                                     |   cesd   |   nddie  | abnas\_memory | abnas\_language |
+|-------------------------------------|:--------:|:--------:|:-------------:|:---------------:|
+| no migraine (median\[IQR range\])   |  8(3,14) |  9(6,13) |     2(0,4)    |      1(0,2)     |
+| with migraine (median\[IQR range\]) | 11(6,20) | 11(8,14) |     2(1,5)    |      1(0,3)     |
 
-``` r
-sd(no_Mig$nddie, na.rm = T)
-```
+### part II: descriptive statistics with cutoffs
 
-    ## [1] 4.48925
+Now we want to further subset some variabls by cutoff values:
 
-``` r
-sd(with_Mig$nddie, na.rm = T)
-```
+-   nddie: &gt;= 16
+-   cesd: &gt;= 16
 
-    ## [1] 4.361822
-
-``` r
-sd(no_Mig$abnas_memory, na.rm = T)
-```
-
-    ## [1] 3.042963
+Look at proportions of each variables in terms of with migraine or without migrain
 
 ``` r
-sd(with_Mig$abnas_memory, na.rm = T)
+ggplot(Mig, aes(x = migraine_status, y = cesd, fill = migraine_status)) + 
+  geom_boxplot()
 ```
 
-    ## [1] 3.369027
+    ## Warning: Removed 71 rows containing non-finite values (stat_boxplot).
 
-``` r
-sd(no_Mig$abnas_language, na.rm = T)
-```
-
-    ## [1] 2.212463
-
-``` r
-sd(with_Mig$abnas_language, na.rm = T)
-```
-
-    ## [1] 2.084485
-
-#### summary table for patients without migraine:
-
-| with migraine | cesd | nddie | memory | language |
-|---------------|------|-------|--------|----------|
-| mean          |      |
-| sd            |      |
-| median        |      |
-| IQR           |      |
-| NA            |      |
-
-summary table for patients with migraine:
-
-| with migraine | cesd | nddie | memory | language |
-|---------------|------|-------|--------|----------|
-| mean          |      |
-| sd            |      |
-| median        |      |
-| IQR           |      |
-| NA            |      |
+![](HW2_code_files/figure-markdown_github/unnamed-chunk-3-1.png)
 
 #### histograms:
 
@@ -240,14 +231,13 @@ hist(with_Mig$abnas_language, freq = F, ylim = c(0, 0.7))
 #### boxplots
 
 ``` r
-par(mfrow = c(2,2))
 Mig$migraine_status <- ifelse(Mig$migraine == 1, "have_migraine", "no_migraine")
 ggplot(Mig, aes(x = migraine, y = cesd, fill = migraine_status) ) + geom_boxplot()
 ```
 
     ## Warning: Removed 71 rows containing non-finite values (stat_boxplot).
 
-![](HW2_code_files/figure-markdown_github/unnamed-chunk-2-1.png)
+![](HW2_code_files/figure-markdown_github/unnamed-chunk-4-1.png)
 
 ``` r
 ggplot(Mig, aes(x = migraine, y = nddie, fill = migraine_status)) + geom_boxplot()
@@ -255,16 +245,16 @@ ggplot(Mig, aes(x = migraine, y = nddie, fill = migraine_status)) + geom_boxplot
 
     ## Warning: Removed 73 rows containing non-finite values (stat_boxplot).
 
-![](HW2_code_files/figure-markdown_github/unnamed-chunk-2-2.png)
+![](HW2_code_files/figure-markdown_github/unnamed-chunk-4-2.png)
 
 ``` r
 ggplot(Mig, aes(x = migraine, y = abnas_memory, fill = migraine_status)) + geom_boxplot()
 ```
 
-![](HW2_code_files/figure-markdown_github/unnamed-chunk-2-3.png)
+![](HW2_code_files/figure-markdown_github/unnamed-chunk-4-3.png)
 
 ``` r
 ggplot(Mig, aes(x = migraine, y = abnas_language, fill = migraine_status)) + geom_boxplot()
 ```
 
-![](HW2_code_files/figure-markdown_github/unnamed-chunk-2-4.png)
+![](HW2_code_files/figure-markdown_github/unnamed-chunk-4-4.png)

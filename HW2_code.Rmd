@@ -9,12 +9,6 @@ output: github_document
 
 This document aims to analyze a research study which examining association of depression and cognitive performance with migraine symtoms. HEP Data were collected from patients with new onset of focal epilepsy with their informations including migraine status, score of NDDIE (Neurological Disorders Depression Inventory for Epilepsy), score of CESD (a questionairre screening for depression), cognitive evaluation for both memory and language.
 
-## Some backgrounds:
-
-CESD: questionairre screening for depression; meausre symptoms of depression; sum of scores to all questions; longer duration of symptoms will have greater score.
-
-nddie: The Neurological Disorders Depression Inventory for Epilepsy (NDDI-E) is a 6-item questionnaire validated to screen for depression in people with epilepsy
-
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(readxl)
@@ -30,44 +24,72 @@ Mig$migraine_status <- ifelse(Mig$migraine == 1, "have_migraine", "no_migraine")
 
 # Exploratory Analysis
 
-Have a look at the data:
+### Part I: descriptive statistics without cutoffs
+
+Firstly, we can have an general look at the data:
 
 ```{r}
 head(Mig)
 str(Mig)
-dim(Mig) # 419 observations, 5 variables
-```
-
-
-#### Seperate subjects with and without migraine.
-
-```{r seperate variables}
-with_Mig <- filter(Mig, migraine == 1)
-no_Mig <- filter(Mig, migraine == 0)
-```
-
-#### Explore subjects with migraine
-
-## 1. Descriptive statistics
-
-First we can take an overall look at the distribution of each variables:
-
-```{r}
-str(Mig)
 skimr::skim(Mig)
 ```
 
-The `skim` function enables a rough preview of the distribution of each variable in the dataset.
+Our data is consisted of 419 observations with 5 variables. Some variables contains missing values which need to be taken care of. 
+
+Since we are interested in the relationship of cognitive performance, with or without migraine, and depression conditions, we can look at and compare the subset of each variable corresponding to migraine status. So here we subset the whole dataset into two subsets:
+
+```{r seperate variables}
+with_Mig <- filter(Mig, migraine == 1)
+str(with_Mig)
+no_Mig <- filter(Mig, migraine == 0)
+str(no_Mig)
+```
+
+Since the `skim` function allows us to the general trend of each variable, we would expect the variables are significantly skewed. To better describe the data, we will use _median_ and _interquartile range_ to describe each variable in these two sets __with_Mig__ and __no_Mig__.
+
+```{r}
+#cesd
+summary(no_Mig$cesd)
+summary(with_Mig$cesd)
+#nddie
+summary(no_Mig$nddie)
+summary(with_Mig$nddie)
+#abnas_memory
+summary(no_Mig$abnas_memory)
+summary(with_Mig$abnas_memory)
+#abnas_language
+summary(no_Mig$abnas_language)
+summary(with_Mig$abnas_language)
+```
+
+To describe the dataset in terms of sample size and missing values:
+
+|             |         cesd      | nddie      | abnas_memory  | abnas_language |
+|-------------|:---------:|:----------:|:-------------:|:--------------:|
+|no migraine (sample size[NAs])|  337(63)  | 337(64)   | 337(0)       |   337(0)   |
+|with migraine (sample size[NAs]) |  82(8) |  82(9)  | 82(0)   |   82(0)   |
 
 
+Put all information about median and IQR together as a table:
+
+|             |         cesd      | nddie      | abnas_memory  | abnas_language |
+|-------------|:---------:|:----------:|:-------------:|:--------------:|
+|no migraine (median[IQR range])|  8(3,14)  | 9(6,13)   | 2(0,4)       |   1(0,2)   |
+|with migraine (median[IQR range]) |  11(6,20) |  11(8,14)  | 2(1,5)   |   1(0,3)   |
+
+
+### part II: descriptive statistics with cutoffs
+
+Now we want to further subset some variabls by cutoff values:
+
+*    nddie: >= 16
+*    cesd: >= 16
 
 
 Look at proportions of each variables in terms of with migraine or without migrain
 
-```{r summary for each variable}
-tbl <- table(Mig$cesd, Mig$migraine)
-prop.table(tbl,1)
-prop.table(tbl,2)
+```{r summary for each variable, include = FALSE}
+table(Mig$migraine)
 ```
 
 ```{r}
