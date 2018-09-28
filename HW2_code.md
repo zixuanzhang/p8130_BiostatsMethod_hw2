@@ -170,6 +170,11 @@ Now we want to further subset some variabls by cutoff values:
 -   cesd: &gt;= 16
 
 ``` r
+no_Mig <- na.omit(no_Mig)
+with_Mig <- na.omit(with_Mig)
+```
+
+``` r
 no_Mig$cesd_cutoff <- ifelse(no_Mig$cesd >= 16, "above_16", "below_16")
 no_Mig$nddie_cutff <- ifelse(no_Mig$nddie >= 16, "above_16", "below_16")
 with_Mig$cesd_cutoff <- ifelse(with_Mig$cesd >= 16, "above_16", "below_16")
@@ -182,21 +187,13 @@ then we can summarize those four variables again with median and IQR:
 sapply(no_Mig[which(no_Mig$cesd >= 16), 2:5], summary)
 ```
 
-    ## $cesd
-    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-    ##   16.00   19.25   24.00   26.56   31.00   48.00 
-    ## 
-    ## $nddie
-    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
-    ##    7.00   13.00   16.00   15.43   18.00   24.00       2 
-    ## 
-    ## $abnas_memory
-    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-    ##   0.000   2.000   4.500   4.968   7.000  12.000 
-    ## 
-    ## $abnas_language
-    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-    ##   0.000   0.000   1.000   2.887   5.750   9.000
+    ##          cesd    nddie abnas_memory abnas_language
+    ## Min.    16.00  7.00000     0.000000       0.000000
+    ## 1st Qu. 18.75 13.00000     2.000000       0.000000
+    ## Median  24.00 16.00000     5.000000       1.500000
+    ## Mean    26.40 15.43333     5.116667       2.983333
+    ## 3rd Qu. 31.00 18.00000     7.250000       6.000000
+    ## Max.    48.00 24.00000    12.000000       9.000000
 
 ``` r
 sapply(no_Mig[which(no_Mig$cesd < 16), 2:5], summary)
@@ -323,3 +320,8 @@ ggplot(Mig, aes(x = migraine, y = abnas_language, fill = migraine_status)) +
 ```
 
 ![](HW2_code_files/figure-markdown_github/unnamed-chunk-3-4.png)
+
+Comment
+=======
+
+Based on the histograms, we can see that CESD score, NDDIE score, memory and performance

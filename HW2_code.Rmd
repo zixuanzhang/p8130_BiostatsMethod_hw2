@@ -2,7 +2,9 @@
 title: "Analysis for HEP Data (Problem 6)"
 author: Eleanor Zhang
 date: 2018-09-27
-output: github_document
+output: 
+     pdf_document:
+         latex_engine: xelatex
 ---
 
 # Overview
@@ -75,6 +77,11 @@ Now we want to further subset some variabls by cutoff values:
 *    nddie: >= 16
 *    cesd: >= 16
 
+```{r remove NA}
+no_Mig <- na.omit(no_Mig)
+with_Mig <- na.omit(with_Mig)
+```
+
 
 ```{r add cutoff variable}
 no_Mig$cesd_cutoff <- ifelse(no_Mig$cesd >= 16, "above_16", "below_16")
@@ -109,6 +116,7 @@ The statistics summary for these cutoffs categories are below:
 
 
 Look at proportions of each variables in terms of with migraine or without migrain
+
 
 
 ### Part III : Plotting
@@ -162,6 +170,6 @@ ggplot(Mig, aes(x = migraine, y = abnas_language, fill = migraine_status)) +
 
 # Comment
 
-
+Based on the histograms, we can see that CESD score, NDDIE score, memory and performance are heavily right skewed for both group with migraine and without migraine. 
 
 
