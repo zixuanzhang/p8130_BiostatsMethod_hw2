@@ -47,27 +47,17 @@ str(no_Mig)
 
 Since the `skim` function allows us to the general trend of each variable, we would expect the variables are significantly skewed. To better describe the data, we will use _median_ and _interquartile range_ to describe each variable in these two sets __with_Mig__ and __no_Mig__.
 
-```{r}
-#cesd
-summary(no_Mig$cesd)
-summary(with_Mig$cesd)
-#nddie
-summary(no_Mig$nddie)
-summary(with_Mig$nddie)
-#abnas_memory
-summary(no_Mig$abnas_memory)
-summary(with_Mig$abnas_memory)
-#abnas_language
-summary(no_Mig$abnas_language)
-summary(with_Mig$abnas_language)
+```{r summary statistics}
+sapply(no_Mig[,2:5], summary)
+sapply(with_Mig[,2:5], summary)
 ```
 
-To describe the dataset in terms of sample size and missing values:
+To describe the dataset in terms of sample size (exclude NAs) and missing values:
 
 |             |         cesd      | nddie      | abnas_memory  | abnas_language |
 |-------------|:---------:|:----------:|:-------------:|:--------------:|
-|no migraine (sample size[NAs])|  337(63)  | 337(64)   | 337(0)       |   337(0)   |
-|with migraine (sample size[NAs]) |  82(8) |  82(9)  | 82(0)   |   82(0)   |
+|no migraine (sample size[NAs])|  274(63)  | 273(64)   | 337(0)       |   337(0)   |
+|with migraine (sample size[NAs]) |  74(8) |  73(9)  | 82(0)   |   82(0)   |
 
 
 Put all information about median and IQR together as a table:
@@ -86,34 +76,60 @@ Now we want to further subset some variabls by cutoff values:
 *    cesd: >= 16
 
 
-Look at proportions of each variables in terms of with migraine or without migrain
-
-```{r summary for each variable, include = FALSE}
-table(Mig$migraine)
+```{r add cutoff variable}
+no_Mig$cesd_cutoff <- ifelse(no_Mig$cesd >= 16, "above_16", "below_16")
+no_Mig$nddie_cutff <- ifelse(no_Mig$nddie >= 16, "above_16", "below_16")
+with_Mig$cesd_cutoff <- ifelse(with_Mig$cesd >= 16, "above_16", "below_16")
+with_Mig$nddie_cutoff <- ifelse(with_Mig$nddie >= 16, "above_16", "below_16")
 ```
+
+then we can summarize those four variables again with median and IQR:
 
 ```{r}
-ggplot(Mig, aes(x = migraine_status, y = cesd, fill = migraine_status)) + 
-  geom_boxplot()
+sapply(no_Mig[which(no_Mig$cesd >= 16), 2:5], summary)
+sapply(no_Mig[which(no_Mig$cesd < 16), 2:5], summary)
+sapply(with_Mig[which(with_Mig$nddie >= 16), 2:5], summary)
+sapply(with_Mig[which(with_Mig$nddie < 16), 2:5], summary)
 ```
 
+Then the sample size for each conditions:
+
+|             |  cesd >= 16 |  cesd < 16  |   nddie >= 16  |  nddie < 16|
+|-------------|:---------:|:----------:|:------------:|:---------------:|
+|no migraine (sample size)|  62  | 212   | 39 | 234  |
+|with migraine (sample size)|  26 |  48  | 11  |  62 |
 
 
-#### histograms:
+The statistics summary for these cutoffs categories are below:
 
+|             |  cesd >= 16 |  cesd < 16  |   nddie >= 16  |  nddie < 16|
+|-------------|:---------:|:----------:|:------------:|:---------------:|
+|no migraine (median(IQR))|  24(19.25,31)  | 5(2,10)   | 16(13,18) | 8(6,11)  |
+|with migraine (median(IQR))|  36(30.5,40) |  9.5(5,15)  | 19(18.5,20.5)  |  10(7,12.5) |
+
+
+Look at proportions of each variables in terms of with migraine or without migrain
+
+
+### Part III : Plotting
+
+1. Histograms
+
+migraine vs. cesd
 ```{r cesd}
 par(mfrow = c(1, 2))
 hist(no_Mig$cesd, freq = F, ylim = c(0, 0.1))
 hist(with_Mig$cesd, freq = F, ylim = c(0, 0.1))
 ```
 
+migraine vs. nddie
 ```{r nddie}
 par(mfrow = c(1, 2))
 hist(no_Mig$nddie, freq = F, ylim = c(0, 0.3))
 hist(with_Mig$nddie, freq = F, ylim = c(0, 0.3))
 ```
 
-
+migraine vs. abnas memory and language
 ```{r abnas}
 par(mfrow = c(2, 2))
 hist(no_Mig$abnas_memory, freq = F, ylim = c(0, 0.6))
@@ -123,14 +139,29 @@ hist(with_Mig$abnas_language, freq = F, ylim = c(0, 0.7))
 ```
 
 
-#### boxplots
+2. Boxplots
 
 ```{r}
-Mig$migraine_status <- ifelse(Mig$migraine == 1, "have_migraine", "no_migraine")
-ggplot(Mig, aes(x = migraine, y = cesd, fill = migraine_status) ) + geom_boxplot()
+ggplot(Mig, aes(x = migraine, y = cesd, fill = migraine_status) ) +
+  geom_boxplot() +
+  ggtitle("boxplot of CESD by migraine status")
 
-ggplot(Mig, aes(x = migraine, y = nddie, fill = migraine_status)) + geom_boxplot()
-ggplot(Mig, aes(x = migraine, y = abnas_memory, fill = migraine_status)) + geom_boxplot()
-ggplot(Mig, aes(x = migraine, y = abnas_language, fill = migraine_status)) + geom_boxplot()
+ggplot(Mig, aes(x = migraine, y = nddie, fill = migraine_status)) + 
+  geom_boxplot() +
+  ggtitle("boxplot of nddie by migraine status")
+
+ggplot(Mig, aes(x = migraine, y = abnas_memory, fill = migraine_status)) + 
+  geom_boxplot() +
+  ggtitle("boxplot of abnas memory by migraine status")
+
+ggplot(Mig, aes(x = migraine, y = abnas_language, fill = migraine_status)) + 
+  geom_boxplot() +
+  ggtitle("boxplot of abnas abnas language by migraine status")
 ```
+
+
+# Comment
+
+
+
 

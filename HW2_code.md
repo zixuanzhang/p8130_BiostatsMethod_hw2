@@ -109,71 +109,51 @@ str(no_Mig)
 Since the `skim` function allows us to the general trend of each variable, we would expect the variables are significantly skewed. To better describe the data, we will use *median* and *interquartile range* to describe each variable in these two sets **with\_Mig** and **no\_Mig**.
 
 ``` r
-#cesd
-summary(no_Mig$cesd)
+sapply(no_Mig[,2:5], summary)
 ```
 
+    ## $cesd
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
-    ##    0.00    3.00    8.00   10.68   14.00   48.00      63
-
-``` r
-summary(with_Mig$cesd)
-```
-
+    ##    0.00    3.00    8.00   10.68   14.00   48.00      63 
+    ## 
+    ## $nddie
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
-    ##    0.00    6.00   11.00   14.41   20.00   46.00       8
-
-``` r
-#nddie
-summary(no_Mig$nddie)
-```
-
-    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
-    ##    6.00    6.00    9.00   10.29   13.00   24.00      64
-
-``` r
-summary(with_Mig$nddie)
-```
-
-    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
-    ##    6.00    8.00   11.00   11.42   14.00   23.00       9
-
-``` r
-#abnas_memory
-summary(no_Mig$abnas_memory)
-```
-
+    ##    6.00    6.00    9.00   10.29   13.00   24.00      64 
+    ## 
+    ## $abnas_memory
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-    ##   0.000   0.000   2.000   2.555   4.000  12.000
-
-``` r
-summary(with_Mig$abnas_memory)
-```
-
-    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-    ##   0.000   1.000   2.000   3.305   5.000  12.000
-
-``` r
-#abnas_language
-summary(no_Mig$abnas_language)
-```
-
+    ##   0.000   0.000   2.000   2.555   4.000  12.000 
+    ## 
+    ## $abnas_language
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
     ##   0.000   0.000   1.000   1.602   2.000   9.000
 
 ``` r
-summary(with_Mig$abnas_language)
+sapply(with_Mig[,2:5], summary)
 ```
 
+    ## $cesd
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+    ##    0.00    6.00   11.00   14.41   20.00   46.00       8 
+    ## 
+    ## $nddie
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+    ##    6.00    8.00   11.00   11.42   14.00   23.00       9 
+    ## 
+    ## $abnas_memory
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##   0.000   1.000   2.000   3.305   5.000  12.000 
+    ## 
+    ## $abnas_language
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
     ##   0.000   0.000   1.000   1.976   3.000   8.000
 
-To describe the dataset in terms of sample size and missing values:
+To describe the dataset in terms of sample size (exclude NAs) and missing values:
 
 |                                    |   cesd  |  nddie  | abnas\_memory | abnas\_language |
 |------------------------------------|:-------:|:-------:|:-------------:|:---------------:|
-| no migraine (sample size\[NAs\])   | 337(63) | 337(64) |     337(0)    |      337(0)     |
-| with migraine (sample size\[NAs\]) |  82(8)  |  82(9)  |     82(0)     |      82(0)      |
+| no migraine (sample size\[NAs\])   | 274(63) | 273(64) |     337(0)    |      337(0)     |
+| with migraine (sample size\[NAs\]) |  74(8)  |  73(9)  |     82(0)     |      82(0)      |
 
 Put all information about median and IQR together as a table:
 
@@ -189,18 +169,92 @@ Now we want to further subset some variabls by cutoff values:
 -   nddie: &gt;= 16
 -   cesd: &gt;= 16
 
-Look at proportions of each variables in terms of with migraine or without migrain
-
 ``` r
-ggplot(Mig, aes(x = migraine_status, y = cesd, fill = migraine_status)) + 
-  geom_boxplot()
+no_Mig$cesd_cutoff <- ifelse(no_Mig$cesd >= 16, "above_16", "below_16")
+no_Mig$nddie_cutff <- ifelse(no_Mig$nddie >= 16, "above_16", "below_16")
+with_Mig$cesd_cutoff <- ifelse(with_Mig$cesd >= 16, "above_16", "below_16")
+with_Mig$nddie_cutoff <- ifelse(with_Mig$nddie >= 16, "above_16", "below_16")
 ```
 
-    ## Warning: Removed 71 rows containing non-finite values (stat_boxplot).
+then we can summarize those four variables again with median and IQR:
 
-![](HW2_code_files/figure-markdown_github/unnamed-chunk-3-1.png)
+``` r
+sapply(no_Mig[which(no_Mig$cesd >= 16), 2:5], summary)
+```
 
-#### histograms:
+    ## $cesd
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##   16.00   19.25   24.00   26.56   31.00   48.00 
+    ## 
+    ## $nddie
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+    ##    7.00   13.00   16.00   15.43   18.00   24.00       2 
+    ## 
+    ## $abnas_memory
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##   0.000   2.000   4.500   4.968   7.000  12.000 
+    ## 
+    ## $abnas_language
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##   0.000   0.000   1.000   2.887   5.750   9.000
+
+``` r
+sapply(no_Mig[which(no_Mig$cesd < 16), 2:5], summary)
+```
+
+    ##              cesd     nddie abnas_memory abnas_language
+    ## Min.     0.000000  6.000000     0.000000       0.000000
+    ## 1st Qu.  2.000000  6.000000     0.000000       0.000000
+    ## Median   5.000000  8.000000     1.000000       0.000000
+    ## Mean     6.033019  8.849057     1.938679       1.320755
+    ## 3rd Qu. 10.000000 11.000000     3.000000       2.000000
+    ## Max.    15.000000 24.000000    11.000000       8.000000
+
+``` r
+sapply(with_Mig[which(with_Mig$nddie >= 16), 2:5], summary)
+```
+
+    ##             cesd    nddie abnas_memory abnas_language
+    ## Min.    15.00000 16.00000          0.0       0.000000
+    ## 1st Qu. 30.50000 18.50000          2.0       1.000000
+    ## Median  36.00000 19.00000          5.0       3.000000
+    ## Mean    34.45455 19.45455          5.0       3.272727
+    ## 3rd Qu. 40.00000 20.50000          6.5       4.500000
+    ## Max.    46.00000 23.00000         12.0       8.000000
+
+``` r
+sapply(with_Mig[which(with_Mig$nddie < 16), 2:5], summary)
+```
+
+    ##             cesd nddie abnas_memory abnas_language
+    ## Min.     0.00000  6.00     0.000000       0.000000
+    ## 1st Qu.  5.00000  7.00     0.250000       0.000000
+    ## Median   9.50000 10.00     2.000000       1.000000
+    ## Mean    10.74194 10.00     2.983871       1.645161
+    ## 3rd Qu. 15.00000 12.75     4.750000       3.000000
+    ## Max.    34.00000 15.00    12.000000       7.000000
+
+Then the sample size for each conditions:
+
+|                             | cesd &gt;= 16 | cesd &lt; 16 | nddie &gt;= 16 | nddie &lt; 16 |
+|-----------------------------|:-------------:|:------------:|:--------------:|:-------------:|
+| no migraine (sample size)   |       62      |      212     |       39       |      234      |
+| with migraine (sample size) |       26      |      48      |       11       |       62      |
+
+The statistics summary for these cutoffs categories are below:
+
+|                             | cesd &gt;= 16 | cesd &lt; 16 | nddie &gt;= 16 | nddie &lt; 16 |
+|-----------------------------|:-------------:|:------------:|:--------------:|:-------------:|
+| no migraine (median(IQR))   |  24(19.25,31) |    5(2,10)   |    16(13,18)   |    8(6,11)    |
+| with migraine (median(IQR)) |  36(30.5,40)  |   9.5(5,15)  |  19(18.5,20.5) |   10(7,12.5)  |
+
+Look at proportions of each variables in terms of with migraine or without migrain
+
+### Part III : Plotting
+
+1.  Histograms
+
+migraine vs. cesd
 
 ``` r
 par(mfrow = c(1, 2))
@@ -210,6 +264,8 @@ hist(with_Mig$cesd, freq = F, ylim = c(0, 0.1))
 
 ![](HW2_code_files/figure-markdown_github/cesd-1.png)
 
+migraine vs. nddie
+
 ``` r
 par(mfrow = c(1, 2))
 hist(no_Mig$nddie, freq = F, ylim = c(0, 0.3))
@@ -217,6 +273,8 @@ hist(with_Mig$nddie, freq = F, ylim = c(0, 0.3))
 ```
 
 ![](HW2_code_files/figure-markdown_github/nddie-1.png)
+
+migraine vs. abnas memory and language
 
 ``` r
 par(mfrow = c(2, 2))
@@ -228,33 +286,40 @@ hist(with_Mig$abnas_language, freq = F, ylim = c(0, 0.7))
 
 ![](HW2_code_files/figure-markdown_github/abnas-1.png)
 
-#### boxplots
+1.  Boxplots
 
 ``` r
-Mig$migraine_status <- ifelse(Mig$migraine == 1, "have_migraine", "no_migraine")
-ggplot(Mig, aes(x = migraine, y = cesd, fill = migraine_status) ) + geom_boxplot()
+ggplot(Mig, aes(x = migraine, y = cesd, fill = migraine_status) ) +
+  geom_boxplot() +
+  ggtitle("boxplot of CESD by migraine status")
 ```
 
     ## Warning: Removed 71 rows containing non-finite values (stat_boxplot).
 
-![](HW2_code_files/figure-markdown_github/unnamed-chunk-4-1.png)
+![](HW2_code_files/figure-markdown_github/unnamed-chunk-3-1.png)
 
 ``` r
-ggplot(Mig, aes(x = migraine, y = nddie, fill = migraine_status)) + geom_boxplot()
+ggplot(Mig, aes(x = migraine, y = nddie, fill = migraine_status)) + 
+  geom_boxplot() +
+  ggtitle("boxplot of nddie by migraine status")
 ```
 
     ## Warning: Removed 73 rows containing non-finite values (stat_boxplot).
 
-![](HW2_code_files/figure-markdown_github/unnamed-chunk-4-2.png)
+![](HW2_code_files/figure-markdown_github/unnamed-chunk-3-2.png)
 
 ``` r
-ggplot(Mig, aes(x = migraine, y = abnas_memory, fill = migraine_status)) + geom_boxplot()
+ggplot(Mig, aes(x = migraine, y = abnas_memory, fill = migraine_status)) + 
+  geom_boxplot() +
+  ggtitle("boxplot of abnas memory by migraine status")
 ```
 
-![](HW2_code_files/figure-markdown_github/unnamed-chunk-4-3.png)
+![](HW2_code_files/figure-markdown_github/unnamed-chunk-3-3.png)
 
 ``` r
-ggplot(Mig, aes(x = migraine, y = abnas_language, fill = migraine_status)) + geom_boxplot()
+ggplot(Mig, aes(x = migraine, y = abnas_language, fill = migraine_status)) + 
+  geom_boxplot() +
+  ggtitle("boxplot of abnas abnas language by migraine status")
 ```
 
-![](HW2_code_files/figure-markdown_github/unnamed-chunk-4-4.png)
+![](HW2_code_files/figure-markdown_github/unnamed-chunk-3-4.png)
